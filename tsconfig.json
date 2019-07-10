@@ -1,0 +1,30 @@
+{
+    "compilerOptions": {
+        "module": "esnext",
+        "target": "esnext",
+        "moduleResolution": "node",
+        "allowJs": false,
+        "allowSyntheticDefaultImports": true,
+        "noFallthroughCasesInSwitch": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true,
+        "declaration": true,
+        "declarationDir": "build/types",
+        "strict": true,
+        "isolatedModules": false,
+        "esModuleInterop": true,
+        "outDir": "build",
+        "rootDir": "./",
+        "sourceMap": true,
+        "noEmit": true,
+        "baseUrl": ".",
+        "noUnusedLocals": true,
+        "removeComments": true,
+        "typeRoots": ["node_modules/@types"],
+        "paths": {
+            "*": ["node_modules/@types/*", "./server/types/*"]
+        }
+    },
+    "include": ["server/**/*"],
+    "exclude": ["node_modules", "build"]
+}
