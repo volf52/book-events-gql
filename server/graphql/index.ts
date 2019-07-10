@@ -1,6 +1,7 @@
-import { makeExecutableSchema, gql } from 'apollo-server-express';
-import { EventTypes, EventResolvers } from './events';
+import { gql, makeExecutableSchema } from 'apollo-server-express';
 import { merge } from 'lodash';
+import { EventResolvers, EventTypes } from './events';
+import { UserTypes, UserRes } from './users';
 
 const RootTypes = gql`
     type Query {
@@ -13,6 +14,6 @@ const RootTypes = gql`
 `;
 
 export default makeExecutableSchema({
-    typeDefs: [RootTypes, EventTypes],
-    resolvers: merge(EventResolvers),
+    typeDefs: [RootTypes, EventTypes, UserTypes],
+    resolvers: merge(EventResolvers, UserRes),
 });

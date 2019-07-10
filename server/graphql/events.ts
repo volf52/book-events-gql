@@ -1,6 +1,7 @@
 import { gql, IResolvers } from 'apollo-server-express';
-
-const events: Array<any> = [];
+import { EventModel } from '../models';
+import { EventDoc } from '../models/types';
+import { UserModel } from '../models';
 
 export const EventTypes = gql`
     extend type Query {
@@ -17,6 +18,7 @@ export const EventTypes = gql`
         description: String!
         price: Float!
         date: String!
+        createdBy: User!
     }
 
     input EventInput {
@@ -26,22 +28,57 @@ export const EventTypes = gql`
     }
 `;
 
-export const EventResolvers: IResolvers<string> = {
+export const EventResolvers: IResolvers<EventDoc> = {
     Query: {
         events: async () => {
-            return events;
+            return EventModel.find()
+                .populate('createdBy')
+                .then(events => {
+                    return events.map(event => {
+                        const { __v, ...rest } = event.toObject();
+                        return rest;
+                    });
+                })
+                .catch(err => {
+                    throw err;
+                });
         },
     },
     Mutation: {
-        createEvent: async (_parent, args) => {
-            const newEvent = {
-                ...args.eventInput,
-                price: +args.eventInput.price,
-                _id: Math.random().toString(),
-                date: new Date().toISOString(),
+        createEvent: async (_parent, { eventInput }) => {
+            const newEvent = new EventModel({
+                ...eventInput,
+                price: +eventInput.price,
+                createdBy: '5d25d5b42fc147134cdcc2c9',
+            });
+            const user = await UserModel.findById(newEvent.createdBy);
+            if (!user) throw new Error('User not found');
+            return newEvent
+                .save()
+                .then(result => {
+                    user.createdEvents.push(result);
+                    user.save().catch(err => {
+                        result.remove().catch(err => {
+                            throw err;
+                        });
+                        throw err;
+                    });
+                    return result.toObject();
+                })
+                .catch(err => {
+                    throw err;
+                });
+        },
+    },
+    Event: {
+        date: async parent => {
+            return parent.date.toISOString();
+        },
+        createdBy: async parent => {
+            return {
+                ...parent.createdBy,
+                createdEvents: null,
             };
-            events.push(newEvent);
-            return newEvent;
         },
     },
 };
